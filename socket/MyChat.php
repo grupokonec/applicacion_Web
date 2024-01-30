@@ -769,7 +769,7 @@ class MyChat implements MessageComponentInterface
         $this->allTicket = $this->dbConnection->queryExe($Ticketquery);
         // Obtener todos los tickets existentes desde la base de datos
     }
-//comentadiros
+//comentadiros dfsksdfdkk
 
     protected function finishTicketsUser($idgrupo)
     {
