@@ -9,16 +9,16 @@
       "iDisplayLength": 5,
       "bLengthChange": false,
       "language": {
-        search: "Sort By :"
+        search: " Buscar por Rut :"
       }
     });
     $('#order-listing').each(function () {
       var datatable = $(this);
       // SEARCH - Add the placeholder for Search and Turn this into in-line form control
       var search_input = datatable.closest('.dataTables_wrapper').find('div[id$=_filter] input');
-      search_input.attr('placeholder', 'Sort');
+      search_input.attr('placeholder', 'Buscar');
       // search_input.removeClass('form-control-sm');
-      var s = datatable.closest('.dataTables_wrapper').find(".dataTables_filter").append('<button type="button" class="btn btn-primary ml-2">New Record</button>');
+      var s = datatable.closest('.dataTables_wrapper').find(".dataTables_filter").append('<button type="button" class="btn btn-primary ml-2">Buscar</button>');
     });
   });
   $(function () {
@@ -44,16 +44,16 @@
       "iDisplayLength": 10,
       "bLengthChange": true,
       "language": {
-        search: "Sort By :"
+        search: "Buscar por Rut  :"
       }
     });
     $('#fixed-column').each(function () {
       var datatable = $(this);
       // SEARCH - Add the placeholder for Search and Turn this into in-line form control
       var search_input = datatable.closest('.dataTables_wrapper').find('div[id$=_filter] input');
-      search_input.attr('placeholder', 'Sort');
+      search_input.attr('placeholder', 'Buscar');
       // search_input.removeClass('form-control-sm');
-      var s = datatable.closest('.dataTables_wrapper').find(".dataTables_filter").append('<button type="button" class="btn btn-primary ml-2">New Record</button>');
+      var s = datatable.closest('.dataTables_wrapper').find(".dataTables_filter").append('<button type="button" class="btn btn-primary ml-2">Buscar</button>');
     });
     $('#fixed-column_wrapper').resize(function() {
       fixedColumnTable.draw();

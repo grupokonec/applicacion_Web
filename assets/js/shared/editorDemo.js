@@ -17,12 +17,12 @@
     });
   }
 
-  /*simplemde editor*/
-  if ($("#simpleMde").length) {
-    var simplemde = new SimpleMDE({
-      element: $("#simpleMde")[0]
-    });
-  }
+ /*simplemde editor*/
+ if ($("#simpleMde").length) {
+  var simplemde = new SimpleMDE({
+    element: $("#simpleMde")[0]
+  });
+}
 
   /*Tinymce editor*/
   if ($("#tinyMceExample").length) {

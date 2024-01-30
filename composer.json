@@ -3,7 +3,8 @@
     "description": "pracctica",
     "require": {
         "phpseclib/phpseclib": "^2.0",
-        "react/promise": "^3.1"
+        "react/promise": "^3.1",
+        "cboden/ratchet": "^0.4.4"
     },
     "autoload": {
         "psr-4": {
