@@ -16,8 +16,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $stmt = $conexion->queryExe($query, [$month, $year]);
 
     // Verifica si la consulta fue un SELECT antes de obtener los resultados
-    if ($stmt !== false) {
-        // Obtiene los resultados como un array
+    if ($stmt instanceof PDOStatement) {
         $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         // Configura la respuesta JSON

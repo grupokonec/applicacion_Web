@@ -18,11 +18,24 @@ const clearTexbox = () => {
   $("#urgencia").text(""); // Si es un elemento de texto
 };
 
-function convertirArchivoABase64(file, callback) {
+function dividirArchivoEnChunks(file, chunkSize = 1024 * 1024) { // 1MB por chunk
+  let chunks = [];
+  let start = 0;
+
+  while (start < file.size) {
+      let end = Math.min(start + chunkSize, file.size);
+      chunks.push(file.slice(start, end));
+      start = end;
+  }
+
+  return chunks;
+}
+
+function convertirChunkABase64(chunk, callback) {
   const reader = new FileReader();
-  reader.readAsDataURL(file);
-  reader.onload = () => callback(reader.result.split(",")[1]); // Obtenemos solo la parte base64
-  reader.onerror = (error) => console.log("Error al leer el archivo:", error);
+  reader.readAsDataURL(chunk);
+  reader.onload = () => callback(reader.result.split(",")[1]);
+  reader.onerror = (error) => console.log("Error al leer el chunk:", error);
 }
 
 $("#button_ticket").click(function () {
@@ -35,51 +48,80 @@ $("#button_ticket").click(function () {
 
   let archivosBase64 = [];
   let archivosProcesados = 0;
+  let totalChunks = 0;
 
   if (uploadedFiles.length > 0) {
       uploadedFiles.forEach(file => {
-          convertirArchivoABase64(file, base64 => {
-              archivosBase64.push({
-                  nombre: file.name,
-                  tipo: file.type,
-                  base64: base64
+          let chunks = dividirArchivoEnChunks(file);
+          totalChunks += chunks.length;
+          chunks.forEach(chunk => {
+              convertirChunkABase64(chunk, base64 => {
+                  archivosBase64.push({
+                      nombre: file.name,
+                      tipo: file.type,
+                      chunk: base64
+                  });
+                  archivosProcesados++;
+                  if (archivosProcesados === totalChunks) {
+                      enviarDatosYArchivos(asunto, tipo, urgencia, titulo, asig_email, id_grupo, archivosBase64, name, email, rut);
+                  }
               });
-              archivosProcesados++;
-              if (archivosProcesados === uploadedFiles.length) {
-                  enviarDatosYArchivos(asunto, tipo, urgencia, titulo, asig_email, id_grupo, archivosBase64, name, email,rut);
-              }
           });
       });
   } else {
-      enviarDatosYArchivos(asunto, tipo, urgencia, titulo, asig_email, id_grupo, [], name, email,rut);
+    enviarDatosYArchivos(
+      asunto,
+      tipo,
+      urgencia,
+      titulo,
+      asig_email,
+      id_grupo,
+      [],
+      name,
+      email,
+      rut
+    );
   }
 
   clearTexbox();
   $("#show_ticket").hide();
 });
 
-function enviarDatosYArchivos(asunto, tipo, urgencia, titulo, asig_email, id_grupo, archivosBase64, name, email,rut) {
+function enviarDatosYArchivos(
+  asunto,
+  tipo,
+  urgencia,
+  titulo,
+  asig_email,
+  id_grupo,
+  archivosBase64,
+  name,
+  email,
+  rut
+) {
   // Asegúrate de definir 'name' y 'email' correctamente
   console.log(name, email);
-  
-  conn.send(JSON.stringify({
+  console.log("los archivos adjuntos", archivosBase64);
+
+  conn.send(
+    JSON.stringify({
       action: "createTicket",
       data: {
-          tipo: tipo,
-          rut:rut,
-          urgencia: urgencia,
-          titulo: titulo,
-          asig_group: asig_email,
-          asunto: asunto,
-          applicant: email,
-          name: name,
-          idgrupo: id_grupo,
-          id_grupo_send: id_grupo,
-          archivo: archivosBase64
+        tipo: tipo,
+        rut: rut,
+        urgencia: urgencia,
+        titulo: titulo,
+        asig_group: asig_email,
+        asunto: asunto,
+        applicant: email,
+        name: name,
+        idgrupo: id_grupo,
+        id_grupo_send: id_grupo,
+        archivo: archivosBase64,
       },
-  }));
+    })
+  );
 }
-
 
 //end
 
@@ -118,14 +160,13 @@ conn.onmessage = function (e) {
     //assigned ticket
     showAssignedTicket(data);
     //end
-    
+
     //resolved ticted start
     showResolvedTickets(data);
     //end
     //all tickets
     showAllTickets(data);
     //end
-    
 
     window.loadUserGrupos = data.allUserGroup.map(
       ({ Correo, Nombre, Rut, idroles }) =>

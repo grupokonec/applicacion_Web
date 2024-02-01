@@ -144,8 +144,8 @@ class MyChat implements MessageComponentInterface
 
                     break;
                 case 'stopState':
-
-                    $this->stopTicket($data["data"], $from);
+                    $stop = 1;
+                    $this->stopTicket($data["data"], $stop, $from);
 
                     break;
                 case 'resolvedTicket':
@@ -177,7 +177,7 @@ class MyChat implements MessageComponentInterface
 
     protected function createTicket($data, $from)
     {
-
+       print_r($data);
         try {
             // Asumiendo que los nombres de las claves en $data coinciden con los campos de tu tabla
             //generar ticket
@@ -271,7 +271,7 @@ class MyChat implements MessageComponentInterface
 
             $from->send(json_encode($response1));
 
-            //   $this->sendMailing($idgt, $asig_groupEmail, $applicant, $fecha_start, $titulo, $name, $asunto, $archivo);
+            $this->sendMailing($idgt, $asig_groupEmail, $applicant, $fecha_start, $titulo, $name, $asunto, $archivo);
 
 
         } catch (\Exception $e) {
@@ -294,10 +294,13 @@ class MyChat implements MessageComponentInterface
         $email = $data["asig_email"];
         $idstate = $data["idstate"];
         $rol = $data["rol"];
-        //end 
-
+        print_r($data);
         $id_grupo_send = $data["id_grupo_send"];
         $idgroupibelong = $data["idgroupibelong"];
+
+        $Correo = $data["Correo"];
+        //end 
+
 
 
         if (!empty($rutIbelong)) {
@@ -385,7 +388,7 @@ class MyChat implements MessageComponentInterface
 
         $from->send(json_encode($response1));
 
-
+        $this->AsiganacionMailing($idTicketAssig, $Correo, $email, $asunto, $archivos);
     }
     //ticket count
     //not
@@ -495,6 +498,8 @@ class MyChat implements MessageComponentInterface
         //end 
         $id_grupo_send = $data["id_grupo_send"];
         $idgroupibelong = $data["idgroupibelong"];
+        $Correo = $data["Correo"];
+
 
 
         $query3 = "UPDATE Generar_Ticket gt SET gt.asignado = '$email' WHERE gt.idticket = '$idTicketAssig'";
@@ -533,10 +538,13 @@ class MyChat implements MessageComponentInterface
 
         $this->getAllTickets($id_grupo_send);
         $this->loadComboboxUserGroup($id_grupo_send);
+        $this->finishTicketsUser($id_grupo_send);
+
         // Preparar la respuesta
         $response = [
             "allTickets" => $this->allTicket,
             "allUserGroup" => $this->groupUserData,
+            "AllrevolvedTticket" => $this->resolvedTicket,
             "status" => "success",
             "message" => "Ticket creado con éxito",
             "type" => "ticket_data"
@@ -575,6 +583,7 @@ class MyChat implements MessageComponentInterface
         $asignedTickets = "SELECT u.Rut, u.Nombre, u.Correo,u.idgrupo AS groupFirst,gt.idgrupo AS groupSecond,
         dt.idticket, 
         gt.dateStart,gt.asignado,e.estado, 
+        e.id_estado,
         dt.tipo,dt.urgencia,dt.titulo,
         ta.asunto,
         dt.texto,
@@ -587,7 +596,7 @@ class MyChat implements MessageComponentInterface
                 INNER JOIN Estados e ON gt.idstate = e.id_estado
                 INNER JOIN Usuarios u ON gt.idUsuario = u.Rut
                 INNER JOIN Detalles_Ticket dt ON gt.idticket = dt.idticket
-                WHERE ta.idUsuario = $rut AND ta.tassign = 1 AND gt.idstate <> 6";
+                WHERE ta.idUsuario = 8888 AND ta.tassign = 1 AND gt.idstate <> 6";
 
         $this->asigedUserTicket = $this->dbConnection->queryExe($asignedTickets);
 
@@ -604,7 +613,7 @@ class MyChat implements MessageComponentInterface
 
     }
 
-    protected function stopTicket($data, $from)
+    protected function stopTicket($data, $stop, $from)
     {
 
         //datos que ingresamos para Ticket Asignados
@@ -617,6 +626,8 @@ class MyChat implements MessageComponentInterface
         $email = $data["asig_email"];
         $idstate = $data["idstate"];
         $rol = $data["rol"];
+        $Correo = $data["Correo"];
+
         //end 
 
         $id_grupo_send = $data["id_grupo_send"];
@@ -690,17 +701,22 @@ class MyChat implements MessageComponentInterface
 
         $this->getAllTickets($idgroupibelong);
         $this->loadComboboxUserGroup($idgroupibelong);
-
+        $this->assignedTicketsUser($idUser);
 
         $response1 = [
             "allTickets" => $this->allTicket,
             "allUserGroup" => $this->groupUserData,
+            "allAsingadoUser" => $this->asigedUserTicket,
             "status" => "success",
             "message" => "Ticket creado con éxito",
             "type" => "ticket_data"
         ];
 
         $from->send(json_encode($response1));
+        $stop ?? '';
+        if (!empty($stop == 1)) {
+            $this->stopMailing($idTicketAssig, $Correo, $guporAsignEmail, $asunto);
+        }
     }
     //search users assigned ticket
     protected function searchTicketAssig($data)
@@ -769,30 +785,15 @@ class MyChat implements MessageComponentInterface
         $this->allTicket = $this->dbConnection->queryExe($Ticketquery);
         // Obtener todos los tickets existentes desde la base de datos
     }
-//comentadiros dfsksdfdkk
+    //comentadiros dfsksdfdkk
 
     protected function finishTicketsUser($idgrupo)
     {
-        $ticketFinish = "SELECT DISTINCT gt.idticket,  
-        gt.dateStart, 
-        dt.tipo,dt.urgencia,dt.titulo,
-        dt.texto,
-        gt.idrol,
-        gt.asignado,
-        gt.idUsuario,
-        u2.Nombre,
-        ta.idUsuario,
-        ht.dateEnd,
-        e.estado
-        FROM Historial_Ticket ht
-        INNER JOIN Generar_Ticket gt ON ht.idTicket = gt.idticket
-        INNER JOIN Estados e ON gt.idstate = e.id_estado
-        INNER JOIN Usuarios u2 ON gt.idUsuario = u2.Rut
+        $ticketFinish = "SELECT *  FROM Generar_Ticket gt 
+        INNER JOIN Usuarios u ON gt.idUsuario = u.Rut
         INNER JOIN Detalles_Ticket dt ON gt.idticket = dt.idticket
-        LEFT JOIN Ticket_Asignados ta ON gt.idticket = ta.idticket
-        LEFT JOIN Usuarios u1 ON ta.idUsuario = u1.Rut
-        INNER JOIN Usuarios u ON ht.idUser = u.Rut
-        WHERE  ht.idstate = 6 AND gt.idgrupo = $idgrupo";
+        INNER JOIN Estados e ON gt.idstate = e.id_estado 
+        WHERE e.id_estado = 6 AND gt.idgrupo = $idgrupo";
 
         $this->resolvedTicket = $this->dbConnection->queryExe($ticketFinish);
     }
@@ -849,6 +850,74 @@ class MyChat implements MessageComponentInterface
 
             $bodyContent = 'URL: http://192.168.1.147/KON3CTADOS/index.php <br>Nombre: ' . $nombre . '<br>Fecha de apertura: ' . $fecha . '<br>Correo del solicitante: ' . $email . '<br>Descripcion: ' . $glosa;
 
+            // Nuevo: Crear un array para almacenar los chunks de cada archivo
+            $archivosCompletos = [];
+
+            foreach ($archivos as $chunk) {
+                if (!isset($chunk['base64']) || !isset($chunk['nombre'])) {
+                    continue; // Saltar este chunk si no tiene los datos necesarios
+                }
+            
+                if (!array_key_exists($chunk['nombre'], $archivosCompletos)) {
+                    $archivosCompletos[$chunk['nombre']] = '';
+                }
+                $archivosCompletos[$chunk['nombre']] .= $chunk['base64'];
+            }
+
+            foreach ($archivosCompletos as $nombre => $contenidoBase64) {
+                $data = base64_decode($contenidoBase64);
+                $tmpFilePath = sys_get_temp_dir() . '/' . $nombre;
+
+                if (file_put_contents($tmpFilePath, $data)) {
+                    // Adjuntar el archivo reconstruido
+                    $mail->addAttachment($tmpFilePath, $nombre);
+                } else {
+                    echo "Error al escribir el archivo: " . $nombre;
+                }
+            }
+
+            $mail->Body = $bodyContent;
+            $mail->send();
+        } catch (Exception $e) {
+            echo "El correo no pudo ser enviado. Error: {$mail->ErrorInfo}";
+        }
+    }
+
+
+
+    protected function AsiganacionMailing($idTicketAssig, $Correo, $email, $asunto, $archivos)
+    {
+        try {
+            $mail = new PHPMailer(true);
+            $mail->isSMTP();
+            $mail->Host = 'mail.grupokonectados.cl';
+            $mail->SMTPAuth = true;
+            $mail->Username = 'prueba@grupokonectados.cl';
+            $mail->Password = 'Diciembre2023';
+            $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS; // o 'ssl' dependiendo de tu configuración
+            $mail->Port = 465; // o el puerto que estés utilizando
+
+            $mail->setFrom('prueba@grupokonectados.cl', 'Soporte Kon3ctados');
+            $mail->Subject = 'Cambio de estado de ticket';
+
+
+            $mail->isHTML(true);
+            // Enviar correo al cliente
+            //soporte solo a los personas 
+            $mail->addAddress($Correo);
+            $mail->Subject = 'Cambio de estado de ticket';
+            $mail->Body = 'El ticket con ID ' . $idTicketAssig . ' ha cambiado de estado. <br>
+            Asignado a:' . $email;
+            $mail->send();
+
+
+            // Limpiar destinatarios y enviar correo a People
+            $mail->clearAddresses();
+            $mail->addAddress($email);
+            $bodyContent = 'Se le asigno el siguiente ticket ' . $idTicketAssig . '<br>' . $asunto . '<br>';
+
+
+
             foreach ($archivos as $archivo) {
                 // Decodificar el archivo de base64
                 $data = base64_decode($archivo['base64']);
@@ -869,45 +938,7 @@ class MyChat implements MessageComponentInterface
                 }
             }
 
-            $mail->Body = $bodyContent;
-
-            // Envío del correo
-            $mail->send();
-        } catch (Exception $e) {
-            echo "El correo no pudo ser enviado. Error: {$mail->ErrorInfo}";
-        }
-    }
-
-
-
-    protected function AsiganacionMailing($id, $asig_groupEmail, $email)
-    {
-        try {
-            $mail = new PHPMailer(true);
-            $mail->isSMTP();
-            $mail->Host = 'mail.grupokonectados.cl';
-            $mail->SMTPAuth = true;
-            $mail->Username = 'prueba@grupokonectados.cl';
-            $mail->Password = 'Diciembre2023';
-            $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS; // o 'ssl' dependiendo de tu configuración
-            $mail->Port = 465; // o el puerto que estés utilizando
-
-            $mail->setFrom('prueba@grupokonectados.cl', 'Soporte Kon3ctados');
-            $mail->Subject = 'Cambio de estado de ticket';
-
-            // Enviar correo al cliente
-            //soporte solo a los personas 
-            $mail->addAddress($email);
-            $mail->Subject = 'Cambio de estado de ticket';
-            $mail->Body = 'El ticket con ID ' . $id . ' ha cambiado de estado. <br>
-            Favor de revisar en "http://192.168.1.147/KON3CTADOS/index.php"';
-            $mail->send();
-
-
-            // Limpiar destinatarios y enviar correo a People
-            $mail->clearAddresses();
-            $mail->addAddress($asig_groupEmail);
-            $mail->Body = 'Se le asignó el siguiente ticket ' . $id;
+            $email->Body = $bodyContent;
             $mail->send();
             // Limpiar destinatarios y enviar correo a People
 

@@ -43,7 +43,7 @@
   var miToast;
 
   //show created tickets
-  showAssigned = function (texto, idticket, idgrupo, titulo) {
+  showAssigned = function (texto, idticket, idgrupo, titulo, Correo) {
     "use strict";
     resetToastPosition();
 
@@ -59,8 +59,13 @@
     <form>
     
     <div class="form-group row justify-content-end" style="width:100%">
-    <div class="col-lg-13" style="width: 100%; height:auto;">
-    <textarea id="simpleMde2" name="simpleMde2" style="width: 100%; height: 100px; max-height: 300px; overflow-y: auto; white-space: pre-wrap; word-wrap: break-word;"></textarea>
+    
+<div class="card-body" id="drop-area1" style="width: 100%; height:auto;>
+        <h4 class="card-title">Descripcion</h4>
+   <textarea id="simpleMde2" name="simpleMde2"> </textarea>
+ </div>
+  <div class="carga de archivos">
+    <div id="file-list1"></div>
 </div>
 
         <div class="col-lg-4">
@@ -109,20 +114,108 @@
         element: $("#simpleMde2")[0],
       });
 
+      const dropArea = document.getElementById("drop-area1");
+
+      // Prevenir el comportamiento por defecto de arrastrar y soltar
+      ["dragenter", "dragover", "dragleave", "drop"].forEach((eventName) => {
+        dropArea.addEventListener(eventName, preventDefaults, false);
+      });
+
+      function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+
+      // Resaltar drop area cuando el item es arrastrado sobre ella
+      ["dragenter", "dragover"].forEach((eventName) => {
+        dropArea.addEventListener(eventName, highlight, false);
+      });
+
+      ["dragleave", "drop"].forEach((eventName) => {
+        dropArea.addEventListener(eventName, unhighlight, false);
+      });
+
+      function highlight(e) {
+        dropArea.classList.add("hover");
+      }
+
+      function unhighlight(e) {
+        dropArea.classList.remove("hover");
+      }
+
+      // Manejar el archivo soltado
+      dropArea.addEventListener("drop", handleDrop, false);
+
+      function handleDrop(e) {
+        let dt = e.dataTransfer;
+        let files = dt.files;
+        handleFiles(files);
+      }
+
+      window.uploadedFiles1= []; // Array para almacenar las referencias de los archivos cargados
+      window.Correo = Correo;
+      function handleFiles(files) {
+        uploadedFiles1.push(...files); // Añadir nuevos archivos al array
+        displayFiles(); // Actualizar la lista de archivos
+      }
+
+      function displayFiles() {
+        const fileList = document.getElementById("file-list1");
+        fileList.innerHTML = ""; // Limpiar lista actual
+
+        uploadedFiles1.forEach((file) => {
+          const fileElement = document.createElement("div");
+          fileList.appendChild(fileElement);
+
+          // Mostrar una previsualización para imágenes
+          if (file.type.startsWith("image/")) {
+            const img = document.createElement("img");
+            img.src = URL.createObjectURL(file);
+            img.height = 60; // Ejemplo de altura para la miniatura
+            img.onload = () => URL.revokeObjectURL(img.src); // Liberar memoria
+            fileElement.appendChild(img);
+          } else {
+            // Para otros tipos de archivos, muestra un icono o nombre del archivo
+            let icon;
+            switch (file.type) {
+              case "application/pdf":
+                icon = "📄";
+                break;
+              case "text/csv":
+                icon = "📑";
+                break;
+              case "application/zip":
+              case "application/x-zip-compressed":
+                icon = "🗜️";
+                break;
+              case "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
+              case "application/msword":
+                icon = "📝";
+                break;
+              default:
+                icon = "📁"; // Icono genérico para otros tipos de archivos
+            }
+            fileElement.textContent = `${icon} ${file.name}`;
+          }
+        });
+      }
+
+
+
       $(".CodeMirror .CodeMirror-scroll").css({
         height: "auto",
         "min-height": "100px",
         "max-height": "300px",
       });
     }
-
+     console.log("estoy en el toast",uploadedFiles1);
     //change state
     $("#change_state").change(function (e) {
       e.preventDefault();
 
       let state = $(this).val();
       var asunto = simplemde ? simplemde.value() : "";
-      changeState(state, idticket, asunto, idgrupo);
+      changeState(state, idticket, asunto, idgrupo,Correo);
     });
   };
   // end
@@ -161,7 +254,7 @@
     });
   };
 
-  showToastViewReopen = function (texto, idticket, idgrupo, titulo,asignado) {
+  showToastViewReopen = function (texto, idticket, idgrupo, titulo, asignado) {
     "use strict";
     resetToastPosition();
 
@@ -177,9 +270,13 @@
      <form>
      
      <div class="form-group row justify-content-end" style="width:100%">
-            <div class="col-lg-13" style="width: 100%; height:auto;">
-            <textarea id="simpleMde3" name="simpleMde3" style="width: 100%; height: 100px; max-height: 300px; overflow-y: auto; white-space: pre-wrap; word-wrap: break-word;"></textarea>
-          </div>
+     <div class="card-body" id="drop-area1" style="width: 100%; height:auto;>
+     <h4 class="card-title">Descripcion</h4>
+<textarea id="simpleMde3" name="simpleMde3"> </textarea>
+</div>
+<div class="carga de archivos">
+ <div id="file-list1"></div>
+</div>
          <div class="col-lg-4">
              <select name="change_stateFinsh" id="change_stateFinsh" class="form-control bg-dark text-light rounded-input" style="border-radius: 5px;">
                  ${window.loadComboboxFinish}
@@ -220,6 +317,91 @@
       simplemde = new SimpleMDE({
         element: $("#simpleMde3")[0],
       });
+      const dropArea = document.getElementById("drop-area2");
+
+      // Prevenir el comportamiento por defecto de arrastrar y soltar
+      ["dragenter", "dragover", "dragleave", "drop"].forEach((eventName) => {
+        dropArea.addEventListener(eventName, preventDefaults, false);
+      });
+
+      function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+
+      // Resaltar drop area cuando el item es arrastrado sobre ella
+      ["dragenter", "dragover"].forEach((eventName) => {
+        dropArea.addEventListener(eventName, highlight, false);
+      });
+
+      ["dragleave", "drop"].forEach((eventName) => {
+        dropArea.addEventListener(eventName, unhighlight, false);
+      });
+
+      function highlight(e) {
+        dropArea.classList.add("hover");
+      }
+
+      function unhighlight(e) {
+        dropArea.classList.remove("hover");
+      }
+
+      // Manejar el archivo soltado
+      dropArea.addEventListener("drop", handleDrop, false);
+
+      function handleDrop(e) {
+        let dt = e.dataTransfer;
+        let files = dt.files;
+        handleFiles(files);
+      }
+
+      window.uploadedFiles2= []; // Array para almacenar las referencias de los archivos cargados
+
+      function handleFiles(files) {
+        uploadedFiles2.push(...files); // Añadir nuevos archivos al array
+        displayFiles(); // Actualizar la lista de archivos
+      }
+
+      function displayFiles() {
+        const fileList = document.getElementById("file-list2");
+        fileList.innerHTML = ""; // Limpiar lista actual
+
+        uploadedFiles2.forEach((file) => {
+          const fileElement = document.createElement("div");
+          fileList.appendChild(fileElement);
+
+          // Mostrar una previsualización para imágenes
+          if (file.type.startsWith("image/")) {
+            const img = document.createElement("img");
+            img.src = URL.createObjectURL(file);
+            img.height = 60; // Ejemplo de altura para la miniatura
+            img.onload = () => URL.revokeObjectURL(img.src); // Liberar memoria
+            fileElement.appendChild(img);
+          } else {
+            // Para otros tipos de archivos, muestra un icono o nombre del archivo
+            let icon;
+            switch (file.type) {
+              case "application/pdf":
+                icon = "📄";
+                break;
+              case "text/csv":
+                icon = "📑";
+                break;
+              case "application/zip":
+              case "application/x-zip-compressed":
+                icon = "🗜️";
+                break;
+              case "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
+              case "application/msword":
+                icon = "📝";
+                break;
+              default:
+                icon = "📁"; // Icono genérico para otros tipos de archivos
+            }
+            fileElement.textContent = `${icon} ${file.name}`;
+          }
+        });
+      }
 
       $(".CodeMirror .CodeMirror-scroll").css({
         height: "auto",

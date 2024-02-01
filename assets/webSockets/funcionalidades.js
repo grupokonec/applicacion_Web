@@ -1,6 +1,7 @@
 //when stop state
-const stateStop = (e, state, idticket, asunto, idgrupo_send) => {
+const stateStop = (e, state, idticket, asunto, idgrupo_send,Correo) => {
   e.preventDefault();
+  console.log(uploadedFiles1);
   /* console.log("el estado", state);
   console.log("elidticket", idticket);
   console.log("el asunto", asunto);
@@ -10,6 +11,47 @@ const stateStop = (e, state, idticket, asunto, idgrupo_send) => {
   console.log("GRUPOO ENVIAR", idgrupo_send);
   console.log("IDGRUPOR", email);
 */
+
+  let archivosBase64 = [];
+  let archivosProcesados = 0;
+
+  if (uploadedFiles1.length > 0) {
+    uploadedFiles1.forEach((file) => {
+      convertirArchivoABase64(file, (base64) => {
+        archivosBase64.push({
+          nombre: file.name,
+          tipo: file.type,
+          base64: base64,
+        });
+        archivosProcesados++;
+        if (archivosProcesados === uploadedFiles1.length) {
+          enviarDatosYArchivosStop(
+            state,
+            idticket,
+            asunto,
+            idgrupo_send,
+            Correo,
+            archivosBase64
+          );
+        }
+      });
+    });
+  } else {
+    enviarDatosYArchivosStop(state, idticket, asunto, idgrupo_send,Correo, []);
+  }
+
+  $(".jq-toast-wrap").remove();
+};
+//end
+
+function enviarDatosYArchivosStop(
+  state,
+  idticket,
+  asunto,
+  idgrupo_send,
+  Correo,
+  archivosBase64
+) {
   conn.send(
     JSON.stringify({
       action: "stopState",
@@ -22,18 +64,49 @@ const stateStop = (e, state, idticket, asunto, idgrupo_send) => {
         idgroupibelong: idgrupo,
         id_grupo_send: idgrupo_send,
         asig_email: email,
+        Correo:Correo,
+        archivo: archivosBase64,
       },
     })
   );
+}
 
+//tickets resolved
+const resolvedTicketUser = (e, state, idticket, asunto, idgrupo_send,Correo) => {
+  e.preventDefault();
+
+  let archivosBase64 = [];
+  let archivosProcesados = 0;
+
+  if (uploadedFiles1.length > 0) {
+    uploadedFiles1.forEach((file) => {
+      convertirArchivoABase64(file, (base64) => {
+        archivosBase64.push({
+          nombre: file.name,
+          tipo: file.type,
+          base64: base64,
+        });
+        archivosProcesados++;
+        if (archivosProcesados === uploadedFiles1.length) {
+          enviarDatosYArchivosResolved(
+            state,
+            idticket,
+            asunto,
+            idgrupo_send,
+            Correo,
+            archivosBase64
+          );
+        }
+      });
+    });
+  } else {
+    enviarDatosYArchivosResolved(state, idticket, asunto, idgrupo_send,Correo, []);
+  }
   $(".jq-toast-wrap").remove();
 };
 //end
 
-//tickets resolved
-const resolvedTicketUser = (e, state, idticket, asunto, idgrupo_send) => {
-  e.preventDefault();
-
+function enviarDatosYArchivosResolved(state, idticket, asunto, idgrupo_send,Correo) {
   conn.send(
     JSON.stringify({
       action: "resolvedTicket",
@@ -46,14 +119,14 @@ const resolvedTicketUser = (e, state, idticket, asunto, idgrupo_send) => {
         idgroupibelong: idgrupo,
         id_grupo_send: idgrupo_send,
         asig_email: email,
+        archivo: archivosBase64,
+        Correo:Correo,
       },
     })
   );
-  $(".jq-toast-wrap").remove();
-};
-//end
+}
 
-const changeState = (state, idticket, asunto, idgrupo_send) => {
+const changeState = (state, idticket, asunto, idgrupo_send,Correo) => {
   //delete button finalize
   $("#bottonAssigned").children().slice(1).hide();
 
@@ -62,12 +135,12 @@ const changeState = (state, idticket, asunto, idgrupo_send) => {
     $("#user_derivar").hide();
     $("#asignar_usu").hide();
     $("#bottonAssigned")
-      .append(`<button class="btn btn-light mr-3"  style="width:100%; padding:7px" onclick="stateStop(event, \`${state}\`, \`${idticket}\`,\`${asunto}\`,\`${idgrupo_send}\`)">
+      .append(`<button class="btn btn-light mr-3"  style="width:100%; padding:7px" onclick="stateStop(event, \`${state}\`, \`${idticket}\`,\`${asunto}\`,\`${idgrupo_send}\`,\`${Correo}\`)">
 <i class="mdi mdi-check text-danger"></i> Stop </button>`);
   } else if (state == 5) {
     // these the botton finalize
     $("#bottonAssigned")
-      .append(`<button class="btn btn-light mr-3" style="width:100%; padding:7px" onclick="resolvedTicketUser(event, \`${state}\`, \`${idticket}\`,\`${asunto}\`,\`${idgrupo_send}\`)">
+      .append(`<button class="btn btn-light mr-3" style="width:100%; padding:7px" onclick="resolvedTicketUser(event, \`${state}\`, \`${idticket}\`,\`${asunto}\`,\`${idgrupo_send}\`,\`${Correo}\`)">
   <i class="mdi mdi-check text-success"></i> Finalizar </button>`);
 
     $("#user_derivar").hide();
@@ -80,8 +153,39 @@ const changeState = (state, idticket, asunto, idgrupo_send) => {
 };
 
 //finish tickets
-const finishResolvedTickets = (e, idticket, asunto, idgrupo_send,asigando) => {
+const finishResolvedTickets = (e, idticket, asunto, idgrupo_send, asigando) => {
+  console.log("este es el grupo de envio", idgrupo_send);
   e.preventDefault();
+
+  let archivosBase64 = [];
+  let archivosProcesados = 0;
+
+  if (uploadedFiles2.length > 0) {
+    uploadedFiles2.forEach((file) => {
+      convertirArchivoABase64(file, (base64) => {
+        archivosBase64.push({
+          nombre: file.name,
+          tipo: file.type,
+          base64: base64,
+        });
+        archivosProcesados++;
+        if (archivosProcesados === uploadedFiles2.length) {
+          enviarDatosYArchivosFinish(
+            idticket,
+            asunto,
+            idgrupo_send,
+            asigando,
+            archivosBase64
+          );
+        }
+      });
+    });
+  } else {
+    enviarDatosYArchivosFinish(idticket, asunto, idgrupo_send, asigando, []);
+  }
+};
+
+function enviarDatosYArchivosFinish(idticket, asunto, idgrupo_send, asigando) {
   let state = $("#change_stateFinsh").val();
   conn.send(
     JSON.stringify({
@@ -95,12 +199,13 @@ const finishResolvedTickets = (e, idticket, asunto, idgrupo_send,asigando) => {
         idgroupibelong: idgrupo,
         id_grupo_send: idgrupo_send,
         asig_email: asigando,
+        archivo: archivosBase64,
+        Correo:Correo
       },
     })
-  
   );
   $(".jq-toast-wrap").remove();
-};
+}
 
 const changStateReopen = (state, idticket, asunto, idgrupo_send) => {
   console.log("el estado", idgrupo_send);
@@ -132,6 +237,7 @@ const reopenTicket = (e, state, idticket, asunto, idgrupo_send) => {
         idgroupibelong: idgrupo,
         id_grupo_send: idgrupo_send,
         asig_email: email,
+        Correo:Correo
       },
     })
   );
@@ -252,11 +358,11 @@ const showAllTickets = (data) => {
     idrol === rol &&
     groupSecond == idgrupo &&
     (idstate == 1 || idstate == 4 || idstate == 7)
-      ? `<button class="btn btn-light mr-3" style="width: 70%; padding: 0px 5px;" onclick="showAssigned(\`${texto}\`, \`${idticket}\`,\`${groupFirst}\`,\`${titulo}\`)">
+      ? `<button class="btn btn-light mr-3" style="width: 70%; padding: 0px 5px;" onclick="showAssigned(\`${texto}\`, \`${idticket}\`,\`${groupFirst}\`,\`${titulo}\`,\`${Correo}\`)">
         <i class="mdi mdi-hand-pointing-right text-primary" style="transform: rotate(90deg);"></i>Asignar
       </button>`
       : idstate == 5 && createState == 1 && Rut == rut
-      ? `<button class="btn btn-light mr-3" style="width: 70%; padding: 0px 5px;" onclick="showToastViewReopen(\`${texto}\`, \`${idticket}\`,\`${groupFirst}\`,\`${titulo}\`,\`${asignado}\`)">
+      ? `<button class="btn btn-light mr-3" style="width: 70%; padding: 0px 5px;" onclick="showToastViewReopen(\`${texto}\`, \`${idticket}\`,\`${groupSecond}\`,\`${titulo}\`,\`${asignado}\`,\`${Correo}\`)">
           <i class="mdi mdi-hand-pointing-right text-primary" style="transform: rotate(90deg);"></i> Finalizar
         </button>`
       : `<button class="btn btn-light mr-3" style="width: 70%; padding: 0px 1px;" onclick="showToastViewAlone(\`${texto}\`,\`${titulo}\`)">
@@ -274,31 +380,32 @@ const showAllTickets = (data) => {
 
 //show assigned ticket
 const showAssignedTicket = (data = {}) => {
-
-  let resulAssig = Array.isArray(data.allAsingadoUser) ? data.allAsingadoUser.map(
-      ({
-        Rut,
-        asignado,
-        correo,
-        estado,
-        fecha,
-        fecha_estado,
-        Nombre,
-        texto,
-        asunto,
-        tipo,
-        titulo,
-        urgencia,
-        idUsuario,
-        idgrupo,
-        idticket,
-        groupFirst,
-        tassign,
-        assignState,
-        resultState,
-      }) => {
-        let ticketTime = new Date(fecha).toLocaleTimeString();
-        return `
+  let resulAssig = Array.isArray(data.allAsingadoUser)
+    ? data.allAsingadoUser.map(
+        ({
+          Rut,
+          asignado,
+          correo,
+          estado,
+          fecha,
+          fecha_estado,
+          Nombre,
+          texto,
+          asunto,
+          tipo,
+          titulo,
+          urgencia,
+          idUsuario,
+          idgrupo,
+          idticket,
+          groupFirst,
+          tassign,
+          assignState,
+          resultState,
+          id_estado,
+        }) => {
+          let ticketTime = new Date(fecha).toLocaleTimeString();
+          return `
     <a class="tickets-card row">
 <div class="tickets-details col-6" >
     <div class="wrapper">
@@ -320,7 +427,7 @@ const showAssignedTicket = (data = {}) => {
 </div>
 <div class="ticket-float col-2">
 ${
-  idUsuario == rut  && tassign == 1 
+  idUsuario == rut && tassign == 1 && id_estado != 5
     ? `<button class="btn btn-light mr-3" style="width: 70%; padding: 0px 5px;" onclick="showAssigned(\`${asunto}\`, \`${idticket}\`,\`${groupFirst}\`,\`${titulo}\`)">
      <i class="mdi mdi-hand-pointing-right text-primary" style="transform: rotate(90deg);"></i>Asignar
   </button>`
@@ -329,14 +436,14 @@ ${
   </button>`
 }
 </div>
-</a>`;}
-) : []
+</a>`;
+        }
+      )
+    : [];
 
-    
-    $("#pending-tickets").children().slice(1).remove();
-    $("#pending-tickets").append(resulAssig);
-
-  }
+  $("#pending-tickets").children().slice(1).remove();
+  $("#pending-tickets").append(resulAssig);
+};
 
 //end
 //asignar ticket user  POR REVISAR ALGUNAS FUNCIONALIDADES
@@ -371,6 +478,73 @@ function asignarUser(e) {
   console.log("al grupo que genero el ticket", id_grupo_send);
   console.log("este es grupo pertenesco", idgrupo);
 
+  //console.log(htmlContent);
+  let archivosBase64 = [];
+  let archivosProcesados = 0;
+
+  if (uploadedFiles1.length > 0) {
+    uploadedFiles1.forEach((file) => {
+      convertirArchivoABase64(file, (base64) => {
+        archivosBase64.push({
+          nombre: file.name,
+          tipo: file.type,
+          base64: base64,
+        });
+        archivosProcesados++;
+        if (archivosProcesados === uploadedFiles1.length) {
+          enviarDatosYArchivosAsign(
+            Rut,
+            idticket,
+            asunto,
+            change_state,
+            asig_email,
+            rol,
+            rut,
+            id_grupo_send,
+            idgrupo,
+            Correo,
+            archivosBase64
+          );
+        }
+      });
+    });
+  } else {
+    enviarDatosYArchivosAsign(
+      Rut,
+      idticket,
+      asunto,
+      change_state,
+      asig_email,
+      rol,
+      rut,
+      id_grupo_send,
+      idgrupo,
+      Correo,
+      [],
+    
+    );
+  }
+
+  //para cerrar el ticket
+  $(".jq-toast-wrap").hide();
+}
+//end
+
+function enviarDatosYArchivosAsign(
+  Rut,
+  idticket,
+  asunto,
+  change_state,
+  asig_email,
+  rol,
+  rut,
+  id_grupo_send,
+  idgrupo,
+  Correo,
+  archivosBase64
+) {
+
+  console.log(id_grupo_send);
   conn.send(
     JSON.stringify({
       action: "AssigUserTickets",
@@ -381,19 +555,16 @@ function asignarUser(e) {
         idstate: change_state,
         asig_email: asig_email,
         rol: rol,
-        rutibelong:rut,
+        rutibelong: rut,
         id_grupo_send: id_grupo_send,
         idgroupibelong: idgrupo,
+        archivo: archivosBase64,
+        emailIbelong:email,
+        Correo:Correo
       },
     })
   );
-
-  //console.log(htmlContent);
-
-  //para cerrar el ticket
-  $(".jq-toast-wrap").hide();
 }
-//end
 
 //delete ticket
 const deleteTicket = (id, rut, idgrupo) => {
