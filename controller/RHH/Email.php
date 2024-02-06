@@ -16,17 +16,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         // Llama al procedimiento almacenado con dos parámetros
         $query = "CALL Rhh_Email(?,?)";
-        $stmt = $conexion->queryExe($query, [$month, $year]);
+        $data = $conexion->queryExe($query, [$month, $year]);
 
-        // Verifica si la consulta fue un SELECT antes de obtener los resultados
-        if ($stmt !== false) {
-            // Obtiene los resultados como un array
-            $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
+        // Verifica si la consulta fue exitosa antes de configurar la respuesta
+        if ($data !== false) {
             // Configura la respuesta JSON
             $response["data"] = $data;
             $response["type"] = "email";
             $response["success"] = true;
+        } else {
+            // Manejo de error, en caso de que la consulta falle
+            $response["error"] = "Error al ejecutar la consulta.";
         }
     } else {
         // Instancia el objeto de conexión
@@ -34,19 +34,24 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         // Llama al procedimiento almacenado con dos parámetros
         $query = "CALL Rhh_Sm_salco(?, ?)";
-        $stmt = $conexion->queryExe($query, [$month, $year]);
+        $data = $conexion->queryExe($query, [$month, $year]); // $data ya debería ser un array
 
-        // Verifica si la consulta fue un SELECT antes de obtener los resultados
-        if ($stmt !== false) {
-            // Obtiene los resultados como un array
-            $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        // Verifica si $data no es false para continuar
+        if ($data !== false) {
+            // $data ya es un array con los resultados, no necesitas llamar a fetchAll
 
             // Configura la respuesta JSON
             $response["data"] = $data;
             $response["type"] = "sms";
             $response["success"] = true;
+        } else {
+            // Manejo de error, en caso de que la consulta falle
+            $response["success"] = false;
+            $response["error"] = "Error al ejecutar la consulta.";
         }
     }
+
+
 
     // Devuelve la respuesta JSON al cliente
     echo json_encode($response);

@@ -254,7 +254,7 @@
     });
   };
 
-  showToastViewReopen = function (texto, idticket, idgrupo, titulo, asignado) {
+  showToastViewReopen = function (texto, idticket, idgrupo, titulo, asignado,Correo) {
     "use strict";
     resetToastPosition();
 
@@ -270,12 +270,12 @@
      <form>
      
      <div class="form-group row justify-content-end" style="width:100%">
-     <div class="card-body" id="drop-area1" style="width: 100%; height:auto;>
+     <div class="card-body" id="drop-area2" style="width: 100%; height:auto;>
      <h4 class="card-title">Descripcion</h4>
 <textarea id="simpleMde3" name="simpleMde3"> </textarea>
 </div>
 <div class="carga de archivos">
- <div id="file-list1"></div>
+ <div id="file-list2"></div>
 </div>
          <div class="col-lg-4">
              <select name="change_stateFinsh" id="change_stateFinsh" class="form-control bg-dark text-light rounded-input" style="border-radius: 5px;">
@@ -283,7 +283,7 @@
              </select>
          </div>
          <div class="col-lg-3" id="bottonAssigned2">
-             <button class="btn btn-light mr-3" data-ticket-id="${idticket},${idgrupo}" onclick="finishResolvedTickets(event, \`${idticket}\`,\`${texto}\`,\`${idgrupo}\`,\`${asignado}\`)"
+             <button class="btn btn-light mr-3" data-ticket-id="${idticket},${idgrupo}" onclick="finishResolvedTickets(event, \`${idticket}\`,\`${texto}\`,\`${idgrupo}\`,\`${asignado}\`,\`${Correo}\`)"
              style="width:100%; padding:7px" id="asignar_usu" name="asignar_usu">
                  <i class="mdi mdi-hand-pointing-left text-primary"></i>Finalizar
              </button>

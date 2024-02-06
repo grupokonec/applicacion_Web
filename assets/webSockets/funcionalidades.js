@@ -1,5 +1,5 @@
 //when stop state
-const stateStop = (e, state, idticket, asunto, idgrupo_send,Correo) => {
+const stateStop = (e, state, idticket, asunto, idgrupo_send, Correo) => {
   e.preventDefault();
   console.log(uploadedFiles1);
   /* console.log("el estado", state);
@@ -37,7 +37,7 @@ const stateStop = (e, state, idticket, asunto, idgrupo_send,Correo) => {
       });
     });
   } else {
-    enviarDatosYArchivosStop(state, idticket, asunto, idgrupo_send,Correo, []);
+    enviarDatosYArchivosStop(state, idticket, asunto, idgrupo_send, Correo, []);
   }
 
   $(".jq-toast-wrap").remove();
@@ -64,7 +64,7 @@ function enviarDatosYArchivosStop(
         idgroupibelong: idgrupo,
         id_grupo_send: idgrupo_send,
         asig_email: email,
-        Correo:Correo,
+        Correo: Correo,
         archivo: archivosBase64,
       },
     })
@@ -72,7 +72,14 @@ function enviarDatosYArchivosStop(
 }
 
 //tickets resolved
-const resolvedTicketUser = (e, state, idticket, asunto, idgrupo_send,Correo) => {
+const resolvedTicketUser = (
+  e,
+  state,
+  idticket,
+  asunto,
+  idgrupo_send,
+  Correo
+) => {
   e.preventDefault();
 
   let archivosBase64 = [];
@@ -100,13 +107,27 @@ const resolvedTicketUser = (e, state, idticket, asunto, idgrupo_send,Correo) => 
       });
     });
   } else {
-    enviarDatosYArchivosResolved(state, idticket, asunto, idgrupo_send,Correo, []);
+    enviarDatosYArchivosResolved(
+      state,
+      idticket,
+      asunto,
+      idgrupo_send,
+      Correo,
+      []
+    );
   }
   $(".jq-toast-wrap").remove();
 };
 //end
 
-function enviarDatosYArchivosResolved(state, idticket, asunto, idgrupo_send,Correo) {
+function enviarDatosYArchivosResolved(
+  state,
+  idticket,
+  asunto,
+  idgrupo_send,
+  Correo,
+  archivosBase64
+) {
   conn.send(
     JSON.stringify({
       action: "resolvedTicket",
@@ -120,13 +141,13 @@ function enviarDatosYArchivosResolved(state, idticket, asunto, idgrupo_send,Corr
         id_grupo_send: idgrupo_send,
         asig_email: email,
         archivo: archivosBase64,
-        Correo:Correo,
+        Correo: Correo,
       },
     })
   );
 }
 
-const changeState = (state, idticket, asunto, idgrupo_send,Correo) => {
+const changeState = (state, idticket, asunto, idgrupo_send, Correo) => {
   //delete button finalize
   $("#bottonAssigned").children().slice(1).hide();
 
@@ -153,7 +174,14 @@ const changeState = (state, idticket, asunto, idgrupo_send,Correo) => {
 };
 
 //finish tickets
-const finishResolvedTickets = (e, idticket, asunto, idgrupo_send, asigando) => {
+const finishResolvedTickets = (
+  e,
+  idticket,
+  asunto,
+  idgrupo_send,
+  asigando,
+  Correo
+) => {
   console.log("este es el grupo de envio", idgrupo_send);
   e.preventDefault();
 
@@ -175,17 +203,32 @@ const finishResolvedTickets = (e, idticket, asunto, idgrupo_send, asigando) => {
             asunto,
             idgrupo_send,
             asigando,
-            archivosBase64
+            archivosBase64,
+            Correo
           );
         }
       });
     });
   } else {
-    enviarDatosYArchivosFinish(idticket, asunto, idgrupo_send, asigando, []);
+    enviarDatosYArchivosFinish(
+      idticket,
+      asunto,
+      idgrupo_send,
+      asigando,
+      [],
+      Correo
+    );
   }
 };
 
-function enviarDatosYArchivosFinish(idticket, asunto, idgrupo_send, asigando) {
+function enviarDatosYArchivosFinish(
+  idticket,
+  asunto,
+  idgrupo_send,
+  asigando,
+  archivosBase64,
+  Correo
+) {
   let state = $("#change_stateFinsh").val();
   conn.send(
     JSON.stringify({
@@ -200,7 +243,7 @@ function enviarDatosYArchivosFinish(idticket, asunto, idgrupo_send, asigando) {
         id_grupo_send: idgrupo_send,
         asig_email: asigando,
         archivo: archivosBase64,
-        Correo:Correo
+        Correo: Correo,
       },
     })
   );
@@ -237,7 +280,7 @@ const reopenTicket = (e, state, idticket, asunto, idgrupo_send) => {
         idgroupibelong: idgrupo,
         id_grupo_send: idgrupo_send,
         asig_email: email,
-        Correo:Correo
+        Correo: Correo,
       },
     })
   );
@@ -388,7 +431,7 @@ const showAssignedTicket = (data = {}) => {
           correo,
           estado,
           fecha,
-          fecha_estado,
+          dateStart,
           Nombre,
           texto,
           asunto,
@@ -415,7 +458,7 @@ const showAssignedTicket = (data = {}) => {
     <div class="wrapper text-muted">
         <span>Assignado a: </span>
         <span>${asignado}</span>
-        <span><i class="mdi mdi-clock-outline"></i>${ticketTime}</span>
+        <span><i class="mdi mdi-clock-outline"></i>${dateStart}</span>
     </div>
 </div>
 <div class="ticket-float  col-2">
@@ -520,8 +563,7 @@ function asignarUser(e) {
       id_grupo_send,
       idgrupo,
       Correo,
-      [],
-    
+      []
     );
   }
 
@@ -543,7 +585,6 @@ function enviarDatosYArchivosAsign(
   Correo,
   archivosBase64
 ) {
-
   console.log(id_grupo_send);
   conn.send(
     JSON.stringify({
@@ -559,8 +600,8 @@ function enviarDatosYArchivosAsign(
         id_grupo_send: id_grupo_send,
         idgroupibelong: idgrupo,
         archivo: archivosBase64,
-        emailIbelong:email,
-        Correo:Correo
+        emailIbelong: email,
+        Correo: Correo,
       },
     })
   );
@@ -580,6 +621,35 @@ const deleteTicket = (id, rut, idgrupo) => {
   );
 };
 //end
+
+const countAllTicket = (data) => {
+  if (Array.isArray(data) && data.length > 0) {
+    console.log("soy la count", data[0].ticket);
+    $("#countAllTicket").text(data[0].ticket);
+  } else {
+    console.error("Error: 'data' no es un array o está vacío.");
+    // Manejar el error o mostrar mensaje al usuario
+  }
+};
+
+const countAllTicketAssigned = (data) => {
+  if (Array.isArray(data) && data.length > 0) {
+    console.log("soy la count", data[0].ticket);
+    $("#countAllTicketAssigned").text(data[0].ticket);
+  } else {
+    console.error("Error: 'data' no es un array o está vacío.");
+    // Manejar el error o mostrar mensaje al usuario
+  }
+};
+const countAllTicketFinish = (data) => {
+  if (Array.isArray(data) && data.length > 0) {
+    console.log("soy la count", data[0].ticket);
+    $("#countAllTicketFinish").text(data[0].ticket);
+  } else {
+    console.error("Error: 'data' no es un array o está vacío.");
+    // Manejar el error o mostrar mensaje al usuario
+  }
+};
 
 //fillcombobox of groupos
 const fillComoboxGroup = (data) => {

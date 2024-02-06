@@ -27,7 +27,12 @@ class MyChat implements MessageComponentInterface
     protected $AllState;
     protected $AllStateFinishCombobox;
 
-    protected $countTickets;
+    protected $countTicketsAll;
+
+    protected $countTicketFinish;
+
+    protected $countTicketsAssign;
+    protected $countTicketsFinish;
 
     public function __construct()
     {
@@ -99,6 +104,9 @@ class MyChat implements MessageComponentInterface
                 case 'ladding':
                     $data = $data["data"];
                     print_r($data);
+                    $this->countTicketsAssigned($data["rut"]);
+                    $this->countTicketFinish($data["idgrupoibelong"]);
+                    $this->countTickets($data["idgrupoibelong"]);
 
                     $this->getAllTickets($data["idgrupoibelong"]);
 
@@ -122,6 +130,10 @@ class MyChat implements MessageComponentInterface
                         "allUserGroup" => $this->groupUserData,
                         "allAsingadoUser" => $this->asigedUserTicket,
                         "AllrevolvedTticket" => $this->resolvedTicket,
+
+                        "CountTicketAll" => $this->countTicketsAll,
+                        "CountTicketAllFinish" => $this->countTicketsFinish,
+                        "CountTicketAllAssigned" => $this->countTicketsAssign,
                         "status" => "success",
                         "message" => "Ticket con éxito",
                         "type" => "ticket_data"
@@ -145,7 +157,7 @@ class MyChat implements MessageComponentInterface
                     break;
                 case 'stopState':
                     $stop = 1;
-                    $this->stopTicket($data["data"], $stop, $from);
+                    $this->stopTicket($data["data"], $from);
 
                     break;
                 case 'resolvedTicket':
@@ -177,7 +189,8 @@ class MyChat implements MessageComponentInterface
 
     protected function createTicket($data, $from)
     {
-       print_r($data);
+        print_r($data);
+        
         try {
             // Asumiendo que los nombres de las claves en $data coinciden con los campos de tu tabla
             //generar ticket
@@ -227,6 +240,7 @@ class MyChat implements MessageComponentInterface
             $groupDataAsigGroupEmail = $this->groupUserData;
 
 
+           
 
 
             // Combinar los RUTs de ambos grupos
@@ -235,11 +249,16 @@ class MyChat implements MessageComponentInterface
 
             $this->getAllTickets($idgrupoSend);
             $this->loadComboboxUserGroup($idgrupoSend);
+            $this->finishTicketsUser($idgrupoSend);
+            //count amount of ticket
+             $this->countTickets($idgrupoSend);
 
             // Preparar la respuesta
             $response = [
                 "allTickets" => $this->allTicket,
                 "allUserGroup" => $this->groupUserData,
+                "CountTicketAll" => $this->countTicketsAll,
+                "CountTicketAllFinish" => $this->countTicketsFinish,
                 "status" => "success",
                 "message" => "Ticket creado con éxito",
                 "type" => "ticket_data"
@@ -260,9 +279,18 @@ class MyChat implements MessageComponentInterface
             }
             $this->getAllTickets($id_grupo);
             $this->loadComboboxUserGroup($id_grupo);
+
+            $this->finishTicketsUser($id_grupo);
+            //count amount of ticket
+            $this->countTickets($id_grupo);
+            $this->assignedTicketsUser($rut);
+
             $response1 = [
                 "allTickets" => $this->allTicket,
                 "allUserGroup" => $this->groupUserData,
+                "CountTicketAll" => $this->countTicketsAll,
+                "CountTicketAllFinish" => $this->countTicketsFinish,
+                "CountTicketAllAssigned" => $this->countTicketsAssign,
                 "status" => "success",
                 "message" => "Ticket creado con éxito",
                 "type" => "ticket_data"
@@ -297,8 +325,8 @@ class MyChat implements MessageComponentInterface
         print_r($data);
         $id_grupo_send = $data["id_grupo_send"];
         $idgroupibelong = $data["idgroupibelong"];
-
         $Correo = $data["Correo"];
+        $archivos= $data["archivo"];
         //end 
 
 
@@ -596,24 +624,15 @@ class MyChat implements MessageComponentInterface
                 INNER JOIN Estados e ON gt.idstate = e.id_estado
                 INNER JOIN Usuarios u ON gt.idUsuario = u.Rut
                 INNER JOIN Detalles_Ticket dt ON gt.idticket = dt.idticket
-                WHERE ta.idUsuario = 8888 AND ta.tassign = 1 AND gt.idstate <> 6";
+                WHERE ta.idUsuario = $rut AND ta.tassign = 1 AND gt.idstate <> 6";
 
         $this->asigedUserTicket = $this->dbConnection->queryExe($asignedTickets);
 
     }
 
-    protected function reopenTicket($data, $from)
-    {
 
 
-        //  $query2 = "INSERT INTO Ticket_Asignados(idAssign,idUsuario,idticket,asunto,dateStart,assignState) VALUES(?,?,?,?,?,?)";
-        // $params2 = [$idAssigned, $idUser, $idTicketAssig, $asunto, $fechaStart, 1];
-
-        // $this->reupdateTicket = $this->dbConnection->queryExe($query2, $params2);
-
-    }
-
-    protected function stopTicket($data, $stop, $from)
+    protected function stopTicket($data, $from)
     {
 
         //datos que ingresamos para Ticket Asignados
@@ -713,10 +732,7 @@ class MyChat implements MessageComponentInterface
         ];
 
         $from->send(json_encode($response1));
-        $stop ?? '';
-        if (!empty($stop == 1)) {
-            $this->stopMailing($idTicketAssig, $Correo, $guporAsignEmail, $asunto);
-        }
+        
     }
     //search users assigned ticket
     protected function searchTicketAssig($data)
@@ -850,40 +866,34 @@ class MyChat implements MessageComponentInterface
 
             $bodyContent = 'URL: http://192.168.1.147/KON3CTADOS/index.php <br>Nombre: ' . $nombre . '<br>Fecha de apertura: ' . $fecha . '<br>Correo del solicitante: ' . $email . '<br>Descripcion: ' . $glosa;
 
-            // Nuevo: Crear un array para almacenar los chunks de cada archivo
-            $archivosCompletos = [];
+            foreach ($archivos as $archivo) {
+                // Decodificar el archivo de base64
+                $data = base64_decode($archivo['base64']);
+                $tmpFilePath = sys_get_temp_dir() . '/' . $archivo['nombre'];
 
-            foreach ($archivos as $chunk) {
-                if (!isset($chunk['base64']) || !isset($chunk['nombre'])) {
-                    continue; // Saltar este chunk si no tiene los datos necesarios
-                }
-            
-                if (!array_key_exists($chunk['nombre'], $archivosCompletos)) {
-                    $archivosCompletos[$chunk['nombre']] = '';
-                }
-                $archivosCompletos[$chunk['nombre']] .= $chunk['base64'];
-            }
-
-            foreach ($archivosCompletos as $nombre => $contenidoBase64) {
-                $data = base64_decode($contenidoBase64);
-                $tmpFilePath = sys_get_temp_dir() . '/' . $nombre;
-
+                // Verificar y escribir datos en el archivo temporal
                 if (file_put_contents($tmpFilePath, $data)) {
-                    // Adjuntar el archivo reconstruido
-                    $mail->addAttachment($tmpFilePath, $nombre);
+                    // Adjuntar archivo o incrustar imagen
+                    if (strpos($archivo['tipo'], 'image/') === 0) {
+                        $bodyContent .= '<br><img src="data:' . $archivo['tipo'] . ';base64,' . $archivo['base64'] . '" style="max-width:100%;">';
+                    } else {
+                        $mail->addAttachment($tmpFilePath, $archivo['nombre']);
+                        $bodyContent .= '<br>Archivo adjunto: ' . $archivo['nombre'];
+                    }
                 } else {
-                    echo "Error al escribir el archivo: " . $nombre;
+                    // Manejar el error en caso de que el archivo no se pueda escribir
+                    echo "Error al escribir el archivo: " . $archivo['nombre'];
                 }
             }
 
             $mail->Body = $bodyContent;
+
+            // Envío del correo
             $mail->send();
         } catch (Exception $e) {
             echo "El correo no pudo ser enviado. Error: {$mail->ErrorInfo}";
         }
     }
-
-
 
     protected function AsiganacionMailing($idTicketAssig, $Correo, $email, $asunto, $archivos)
     {
@@ -950,12 +960,44 @@ class MyChat implements MessageComponentInterface
 
     protected function countTickets($idgrupo)
     {
-        $query = "SELECT  COUNT(gt.idticket) FROM Generar_Ticket gt  WHERE gt.idgrupo = $idgrupo";
-        $this->countTickets = $this->dbConnection->queryExe($query);
+        $query = "SELECT  COUNT(gt.idticket) as ticket FROM Generar_Ticket gt  WHERE gt.idgrupo = $idgrupo";
+        $this->countTicketsAll = $this->dbConnection->queryExe($query);
 
     }
 
+    protected function countTicketsAssigned($rut)
+    {
 
+        $query = "SELECT COUNT(dt.idticket) As ticket
+        FROM Ticket_Asignados ta 
+                INNER JOIN Generar_Ticket gt ON ta.idticket = gt.idticket
+                INNER JOIN roles r ON gt.idrol = r.idrol
+                INNER JOIN Estados e ON gt.idstate = e.id_estado
+                INNER JOIN Usuarios u ON gt.idUsuario = u.Rut
+                INNER JOIN Detalles_Ticket dt ON gt.idticket = dt.idticket
+                WHERE ta.idUsuario = $rut AND ta.tassign = 1 AND gt.idstate <> 6";
+
+        $this->countTicketsAssign = $this->dbConnection->queryExe($query);
+
+    }
+
+    protected function countTicketFinish($idgrupo){
+
+        $query = "SELECT COUNT(gt.idticket) As ticket  FROM Generar_Ticket gt 
+        INNER JOIN Usuarios u ON gt.idUsuario = u.Rut
+        INNER JOIN Detalles_Ticket dt ON gt.idticket = dt.idticket
+        INNER JOIN Estados e ON gt.idstate = e.id_estado 
+        WHERE e.id_estado = 6 AND gt.idgrupo = $idgrupo";
+        $this->countTicketsFinish = $this->dbConnection->queryExe($query);
+
+    }
+
+    protected function countTicketAssign($idgrupo)
+    {
+        $query2 = "SELECT COUNT(gt.idticket) as ticket FROM Generar_Ticket gt WHERE gt.idgrupo = $idgrupo";
+
+        $this->countTicketFinish = $this->dbConnection->queryExe($query2);
+    }
     public function onClose(ConnectionInterface $conn)
     {
         // Eliminar la conexión cerrada

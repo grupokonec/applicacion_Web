@@ -13,17 +13,20 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     // Llama al procedimiento almacenado con dos parámetros
     $query = "CALL proc_Rhh_get_time_call(?,?)";
-    $stmt = $conexion->queryExe($query, [$month, $year]);
+    $data = $conexion->queryExe($query, [$month, $year]);
 
-    // Verifica si la consulta fue un SELECT antes de obtener los resultados
-    if ($stmt instanceof PDOStatement) {
-        $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
+    // Verifica si la consulta fue exitosa antes de configurar la respuesta
+    if ($data !== false) {
         // Configura la respuesta JSON
         $response["data"] = $data;
+        $response["type"] = "time_call"; // Asumo el tipo basado en el nombre del procedimiento
         $response["success"] = true;
+    } else {
+        // Opcional: Agregar manejo de error en caso de que la consulta falle
+        $response["error"] = "Error al ejecutar la consulta.";
     }
 
+    // Envía la respuesta JSON
     echo json_encode($response);
 }
 

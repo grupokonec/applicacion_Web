@@ -16,7 +16,7 @@ $rol = $_SESSION['idroles'];
                 <div class="d-flex pb-4 mb-4 border-bottom">
                     <div class="d-flex align-items-center">
                         <h5 class="page-title mb-n2">Tickets</h5>
-                        <p class="mt-2 mb-n1 ml-3 text-muted">230 Tickets</p>
+                        <p  class="mt-2 mb-n1 ml-3 text-muted" ></p>
                     </div>
                     <div class="ml-auto d-flex align-items-stretch w-50 justify-content-end">
                         <button type="button" class="btn btn-success" id="create_ticket">Crear Ticket</button>
@@ -68,7 +68,7 @@ $rol = $_SESSION['idroles'];
                                             <select name="asig_group" id="asig_group"
                                                 class="form-control bg-dark text-light rounded-input"
                                                 style="border-radius: 5px;">
-
+                                                <option value="">Grupos</option>
                                             </select>
                                         </div>
                                     </div>
@@ -99,19 +99,19 @@ $rol = $_SESSION['idroles'];
                     <ul class="nav nav-tabs tickets-tab-switch" role="tablist">
                         <li class="nav-item">
                             <a class="nav-link active" id="open-tab" data-toggle="tab" href="#open-tickets" role="tab"
-                                aria-controls="open-tickets" aria-selected="true">Tickets <div class="badge">13
+                                aria-controls="open-tickets" aria-selected="true">Tickets <div class="badge" id="countAllTicket"><!--13-->
                                 </div></a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" id="pending-tab" data-toggle="tab" href="#pending-tickets" role="tab"
                                 aria-controls="pending-tickets" aria-selected="false">Tickets Asingados<div
-                                    class="badge">50 </div></a>
+                                    class="badge" id="countAllTicketAssigned" ><!--50--> </div></a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" id="onhold-tab" data-toggle="tab" href="#onhold-tickets" role="tab"
                                 aria-controls="onhold-tickets" aria-selected="false">Tickets Resueltos <div
-                                    class="badge">
-                                    29 </div>
+                                    class="badge"  id="countAllTicketFinish">
+                                    <!---29--> </div>
                             </a>
                         </li>
                     </ul>
