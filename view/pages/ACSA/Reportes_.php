@@ -11,7 +11,7 @@
         <div class="row grid-margin">
           <div class="col-12">
             <div class="alert alert-success" role="alert">
-              Informes <strong>Autopista Central </strong> 
+              Informes <strong>Autopista Central </strong>
             </div>
             <p class="card-description"> En esta sección, puedes generar informes detallados según tus necesidades.
               Desde informes semanales y diarios hasta visualizar pagos, gestiones y más, tienes la capacidad de obtener

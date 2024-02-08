@@ -32,10 +32,12 @@ class ConnectionOne{
     {
         set_time_limit(600);
         try {
+            
             $stmt = $this->pdo->prepare($query);
             $stmt->execute($params);
 
             return $stmt->fetchAll(PDO::FETCH_CLASS);
+
         } catch (PDOException $e) {
             die("Error en la consulta: " . $e->getMessage());
         }
