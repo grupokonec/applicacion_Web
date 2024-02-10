@@ -14,7 +14,7 @@
         <a class="nav-link collapsed" data-toggle="collapse" href="#e-commerce" aria-expanded="false"
           aria-controls="e-commerce">
           <i class="menu-icon typcn typcn-book"></i>
-          <span class="menu-title">Asignacion</span>
+          <span class="menu-title" style="font-size:13.5px">Asignacion</span>
           <i class="menu-arrow"></i>
         </a>
         <div class="collapse" id="e-commerce" style="">
@@ -32,9 +32,6 @@
     }
     ?>
     <?php
-
-
-
     // Definir un array asociativo con los nombres de las empresas y las direcciones correspondientes
     $accionesEmpresas = array(
       'Vespucio Sur' => array('pages/VSUR/Gestiones_.php', 'pages/VSUR/Reportes_.php','pages/VSUR/Informes.php'),
@@ -60,7 +57,8 @@
       'TICKET' => array('pages/CRM/CRM_.php', 'pages/VICI/VICIDIAL_.php','pages/TICKET/ticket.php'),
       'MAILING' => array('pages/EJECUTIVO/crm_vsur.php'),
       'EJECUTIVOS' => array('pages/EJECUTIVO/Crear_Ejecutivo.php'),
-      'RHH' => array('pages/RHH/Email_.php','pages/RHH/Telefonos.php')
+      'RHH' => array('pages/RHH/Email_.php','pages/RHH/Telefonos.php','pages/RHH/Carga_Archivos.php'),
+      'HONORARIOS' => array('pages/ACSA/Honorarios.php')
       // Agrega más empresas según sea necesario
     );
 

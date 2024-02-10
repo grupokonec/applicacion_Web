@@ -103,41 +103,42 @@ $conexion->cerrarConexion();
 
 
 
-<div class="modal fade" id="modcrmModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLabel">Modificar Usuario</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <form method="post" action='../controller/CRM/modificar_crm.php'>       
-            <div class="form-group" >
-                <label>RUT</label>
-                <input type="text" id="rut0" name="rut0" value="<?php echo $row["id"] ?>">
-            </div>    
-            <div class="form-group" >
-                <label>Nombre:</label>
-                <input type="text" id="nombre0" name="nombre0" value="<?php echo $row["name"] ?>">
-            </div>
-            
-            <div class="form-group" >
-                <label>Contraseña:</label>
-                <input type="text" id="contra" name="contra" value="<?php echo $row["password"] ?>">
-            </div>
+<div class="modal fade" id="modcrmModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+  aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Modificar Usuario</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form method="post" action='../controller/CRM/modificar_crm.php'>
+          <div class="form-group">
+            <label>RUT</label>
+            <input type="text" id="rut0" name="rut0" value="<?php echo $row["id"] ?>">
+          </div>
+          <div class="form-group">
+            <label>Nombre:</label>
+            <input type="text" id="nombre0" name="nombre0" value="<?php echo $row["name"] ?>">
+          </div>
+
+          <div class="form-group">
+            <label>Contraseña:</label>
+            <input type="text" id="contra" name="contra" value="<?php echo $row["password"] ?>">
+          </div>
 
 
 
-        <input type="hidden" id="id_mod" name="id_mod">
+          <input type="hidden" id="id_mod" name="id_mod">
 
 
-                    <button type="submit" class="btn btn-primary">Modificar Ticket</button>
-                </form>
-            </div>
-        </div>
+          <button type="submit" class="btn btn-primary">Modificar Ticket</button>
+        </form>
+      </div>
     </div>
+  </div>
 </div>
 
 
@@ -173,12 +174,12 @@ $conexion->cerrarConexion();
               </tr>
             </thead>
             <tbody>
-            <?php
-$counter = 1; // Inicializamos el contador
-
-if ($result->num_rows > 0) {
-    while ($row = $result->fetch_assoc()) {
-        echo "<tr>
+              <?php
+              $counter = 1; // Inicializamos el contador
+              
+              if ($result->num_rows > 0) {
+                while ($row = $result->fetch_assoc()) {
+                  echo "<tr>
                 <th scope='row'>" . $counter . "</th>
                 <td>" . $row["idempresa"] . "</td>
                 <td>" . $row["id"] . "</td>
@@ -203,12 +204,12 @@ if ($result->num_rows > 0) {
                     </form>
                 </td>
               </tr>";
-        $counter++;
-    }
-} else {
-    echo "<tr><td colspan='7'>No hay usuarios en la base de datos</td></tr>";
-}
-?>
+                  $counter++;
+                }
+              } else {
+                echo "<tr><td colspan='7'>No hay usuarios en la base de datos</td></tr>";
+              }
+              ?>
 
             </tbody>
           </table>
@@ -231,17 +232,17 @@ if ($result->num_rows > 0) {
 <script src="../assets/js/shared/data-table.js"></script>
 
 <script>
-    // Script para establecer el valor de los campos del modal al abrirlo
-    $('#modcrmModal').on('show.bs.modal', function (event) {
-        var button = $(event.relatedTarget); // Botón que activó el modal
-        var userId = button.data('modid');
-        var userName = button.data('modname');
-        var userContra = button.data('modcontra');
+  // Script para establecer el valor de los campos del modal al abrirlo
+  $('#modcrmModal').on('show.bs.modal', function (event) {
+    var button = $(event.relatedTarget); // Botón que activó el modal
+    var userId = button.data('modid');
+    var userName = button.data('modname');
+    var userContra = button.data('modcontra');
 
-        // Establecer los valores de los campos del modal con los datos del usuario
-        $('#id_mod').val(userId);
-        $('#rut0').val(userId).prop('readonly', true);
-        $('#nombre0').val(userName);
-        $('#contra').val(userContra);
-    });
+    // Establecer los valores de los campos del modal con los datos del usuario
+    $('#id_mod').val(userId);
+    $('#rut0').val(userId).prop('readonly', true);
+    $('#nombre0').val(userName);
+    $('#contra').val(userContra);
+  });
 </script>
