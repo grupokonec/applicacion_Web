@@ -14,8 +14,7 @@ $server = IoServer::factory(
             new MyChat()
         )
     ),
-    $port,
-    $ip
+  
 );
 
 echo "Servidor corriendo en el puerto \n";
