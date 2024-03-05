@@ -1,9 +1,7 @@
 <?php
 include("MyChat.php");
 require __DIR__ . '/../vendor/autoload.php';
-use Ratchet\Server\IoServer;
-use Ratchet\Http\HttpServer;
-use Ratchet\WebSocket\WsServer;
+
 // Asegúrate de usar el espacio de nombres correcto para MyChat
 
 $ip = "192.168.1.145"; // Cambia la dirección IP a la de tu servidor
