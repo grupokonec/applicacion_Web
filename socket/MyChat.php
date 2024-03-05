@@ -988,14 +988,7 @@ class MyChat implements MessageComponentInterface
 
         $this->countTicketFinish = $this->dbConnection->queryExe($query2);
     }
-    public function onClose(ConnectionInterface $conn)
-    {
-        // Eliminar la conexión cerrada
-        $this->clients->detach($conn);
-        $this->clientCount--;
-        echo "Cliente desconectado. Total de clientes: {$this->clientCount}\n";
-
-    }
+   
 
     public function onError(ConnectionInterface $conn, \Exception $e)
     {
