@@ -1,15 +1,5 @@
 <?php
-require __DIR__ . '/../config/conexionReporte.php'; // Asegúrate de que esta ruta es correcta
-require __DIR__ . '/../vendor/autoload.php';
-use Ratchet\MessageComponentInterface;
-use Ratchet\ConnectionInterface;
 
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\Exception;
-
-require __DIR__ . '../../phpmailer/Exception.php';
-require __DIR__ . '../../phpmailer/PHPMailer.php';
-require __DIR__ . '../../phpmailer/SMTP.php';
 
 class MyChat implements MessageComponentInterface
 {
